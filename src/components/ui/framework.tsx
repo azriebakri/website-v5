@@ -43,7 +43,7 @@ export default function PortfolioWireframe() {
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
-          onClick={() => setSidebarOpen(false)}
+           onClick={() => setSidebarOpen(false)}
         />
       )}
 
@@ -139,7 +139,7 @@ export default function PortfolioWireframe() {
                 Welcome to My Portfolio
               </h2>
               <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto px-4">
-                I'm a passionate full-stack developer with 5+ years of
+                I&apos;m a passionate full-stack developer with 5+ years of
                 experience creating innovative web applications and digital
                 solutions.
               </p>
@@ -239,7 +239,7 @@ export default function PortfolioWireframe() {
                     problems and deliver exceptional user experiences.
                   </p>
                   <p className="text-muted-foreground leading-relaxed text-sm md:text-base">
-                    When I'm not coding, you can find me exploring new
+                    When I&apos;m not coding, you can find me exploring new
                     technologies, contributing to open-source projects, or
                     sharing knowledge through technical writing and mentoring.
                   </p>
@@ -660,7 +660,7 @@ export default function PortfolioWireframe() {
                 Get In Touch
               </h2>
               <p className="text-muted-foreground text-sm md:text-base px-4">
-                I'm always open to discussing new opportunities and interesting
+                I&apos;m always open to discussing new opportunities and interesting
                 projects.
               </p>
             </div>
