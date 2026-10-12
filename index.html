@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Azrie Bakri</title>
+  <meta name="description" content="Azrie Bakri is a full-stack software engineer in Kuala Lumpur who builds interfaces and APIs for the web.">
+  <meta property="og:title" content="Azrie Bakri">
+  <meta property="og:description" content="Full-stack software engineer in Kuala Lumpur.">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="assets/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:ital,wght@0,400..800;1,400..600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script>
+    try {
+      const t = localStorage.getItem('theme');
+      if (t) document.documentElement.dataset.theme = t;
+    } catch (e) {}
+  </script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <a class="wordmark" href="#top">Azrie Bakri</a>
+    <nav aria-label="Main">
+      <a href="#about">About</a>
+      <a href="#experience">Experience</a>
+      <a href="#work">Work</a>
+      <a href="#contact">Contact</a>
+      <button class="theme-toggle" type="button" aria-label="Switch colour theme">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor"/></svg>
+      </button>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="top">
+      <h1>Azrie Bakri</h1>
+      <p class="lede">Software engineer in Kuala Lumpur. I build the interfaces and APIs behind job search across six markets at <a href="https://www.seekasia.com/">SEEK</a>.</p>
+    </section>
+
+    <section id="about" aria-labelledby="about-h">
+      <h2 id="about-h">About</h2>
+      <div class="about">
+        <img class="portrait" src="assets/me.png" width="180" height="180" alt="Portrait of Azrie Bakri">
+        <div class="prose">
+          <p>I'm a full-stack developer who enjoys crafting clear, visually considered interfaces on top of solid backend work. I build end-to-end: the screen someone uses, and the API it talks to.</p>
+          <p>I started building for the web in 2018. Since then I've worked at a large consultancy, a product company partnering with Atlassian, and a fast-moving startup. Each one changed how I approach development and how I work with a team.</p>
+          <p>Right now I'm at SEEK, working on the platforms behind JobStreet and JobsDB that connect millions of job seekers with work across Asia-Pacific.</p>
+          <p class="stack"><span>Working with lately:</span> JavaScript, TypeScript, React, GraphQL, Node.js, AWS and Docker.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="experience" aria-labelledby="exp-h">
+      <h2 id="exp-h">Experience</h2>
+
+      <figure class="timeline" aria-hidden="true">
+        <div class="tl-rows">
+          <div class="tl-row"><span class="tl-label">SEEK</span><span class="tl-track"><span class="tl-bar is-current" data-from="2022-02" data-to="now"></span></span></div>
+          <div class="tl-row"><span class="tl-label">Food Market Hub</span><span class="tl-track"><span class="tl-bar" data-from="2021-05" data-to="2022-02"></span></span></div>
+          <div class="tl-row"><span class="tl-label">ServiceRocket</span><span class="tl-track"><span class="tl-bar" data-from="2020-10" data-to="2021-04"></span></span></div>
+          <div class="tl-row"><span class="tl-label">Avanade</span><span class="tl-track"><span class="tl-bar" data-from="2017-07" data-to="2020-10"></span></span></div>
+        </div>
+        <div class="tl-axis"><span class="tl-label"></span><span class="tl-years"></span></div>
+      </figure>
+
+      <ol class="jobs">
+        <li>
+          <details open>
+            <summary>
+              <span class="job-role">Software Engineer, <a href="https://www.seekasia.com/">SEEK</a></span>
+              <span class="job-when">Feb 2022 – present</span>
+            </summary>
+            <p class="job-where">Selangor, Malaysia</p>
+            <ul>
+              <li>Backend development and API standardisation across SEEK's Asian job platforms, JobStreet and JobsDB, building unified REST endpoints for job posting and search in the Philippines, Malaysia, Singapore, Indonesia, Thailand and Hong Kong.</li>
+              <li>Contribute to platform unification, aligning technical architecture with SEEK's direction across Asia-Pacific to reduce fragmentation and keep the experience consistent.</li>
+              <li>Implemented experimentation infrastructure in business-critical systems for data-driven product decisions, with zero production incidents thanks to feature flags and rollback mechanisms.</li>
+              <li>Built reusable internal libraries that enforce consistent architecture and cut duplication across distributed teams.</li>
+              <li>Set up integration and unit test suites and kept technical documentation current for cross-functional teams.</li>
+            </ul>
+          </details>
+        </li>
+        <li>
+          <details>
+            <summary>
+              <span class="job-role">Full-Stack Developer, <a href="https://foodmarkethub.com/">Food Market Hub</a></span>
+              <span class="job-when">May 2021 – Feb 2022</span>
+            </summary>
+            <p class="job-where">Selangor, Malaysia</p>
+            <ul>
+              <li>Worked with internal teams on in-house products with forecasting capabilities for general and enterprise clients.</li>
+              <li>Wrote automated tests and built a CI/CD pipeline with GitHub Actions and AWS, reducing testing and deployment effort and human error.</li>
+            </ul>
+          </details>
+        </li>
+        <li>
+          <details>
+            <summary>
+              <span class="job-role">Software Engineer, <a href="https://www.servicerocket.com/">ServiceRocket</a></span>
+              <span class="job-when">Oct 2020 – Apr 2021</span>
+            </summary>
+            <p class="job-where">Kuala Lumpur, Malaysia</p>
+            <ul>
+              <li>Developed and maintained in-house products and client websites, mainly in Java, CoffeeScript, HTML and jQuery.</li>
+              <li>Tested sites across browsers and mobile devices for compatibility and responsiveness.</li>
+              <li>Worked daily with engineers, designers, producers and clients.</li>
+            </ul>
+          </details>
+        </li>
+        <li>
+          <details>
+            <summary>
+              <span class="job-role">Senior Analyst, Solution Developer, <a href="https://www.avanade.com/ms-my">Avanade</a></span>
+              <span class="job-when">Jul 2017 – Oct 2020</span>
+            </summary>
+            <p class="job-where">Kuala Lumpur, Malaysia</p>
+            <ul>
+              <li>Developed and shipped interactive web applications for clients.</li>
+              <li>Worked closely with Accenture functional teams and clients to solve domain-specific business problems.</li>
+            </ul>
+          </details>
+        </li>
+      </ol>
+    </section>
+
+    <section id="work" aria-labelledby="work-h">
+      <h2 id="work-h">Selected work</h2>
+
+      <article class="project">
+        <img src="assets/work/alpha-oil.png" width="1200" height="900" loading="lazy" alt="Alpha Oil dashboard showing the crude oil supply chain">
+        <div>
+          <h3>Alpha Oil</h3>
+          <p>An end-to-end dashboard visualising Malaysia's crude oil supply chain across upstream, midstream and downstream businesses.</p>
+          <p>I built new modules, features and charts, created and maintained the REST APIs behind the visualisations, and handled enhancements and bug fixes.</p>
+          <p class="tech">React, Node.js, MySQL, Azure</p>
+        </div>
+      </article>
+
+      <article class="project">
+        <img src="assets/work/alpha-wells.png" width="1200" height="900" loading="lazy" alt="Alpha Wells analytics screen with oil well charts">
+        <div>
+          <h3>Alpha Wells</h3>
+          <p>Upstream analytics that give engineers historical oil well data for offset studies, helping optimise well designs and save time and cost.</p>
+          <p>I built custom D3.js charts for complex data sets and turned the design team's wireframes into responsive, interactive React features.</p>
+          <p class="tech">React, D3.js, MySQL</p>
+        </div>
+      </article>
+
+      <article class="project">
+        <img src="assets/work/forecast-plus.png" width="1200" height="900" loading="lazy" alt="Forecast Plus app showing sales and procurement predictions">
+        <div>
+          <h3>Forecast Plus</h3>
+          <p>An AI-based analytics app that gives restaurant owners and outlet managers predictions from their historical procurement and sales data.</p>
+          <p>I looked after both the front end and the back end.</p>
+          <p class="tech">React, Node.js, MongoDB, Docker</p>
+        </div>
+      </article>
+
+      <article class="project">
+        <img src="assets/work/myexperts.png" width="1200" height="900" loading="lazy" alt="MyExperts platform landing page">
+        <div>
+          <h3>MyExperts</h3>
+          <p>A platform transformation uniting a client's group and subsidiaries under one system for service management, from order and resourcing through to project closure and billing.</p>
+          <p>I turned wireframes into responsive features in C#, HTML and CSS, and wrote and maintained the SQL behind the data.</p>
+          <p class="tech">ASP.NET, C#, MySQL, jQuery</p>
+        </div>
+      </article>
+
+      <p class="earlier">Earlier: <a href="https://azriebakri.github.io/v1/">my first portfolio site</a>, designed and built in 2019 with React (<a href="https://github.com/azriebakri/v1">source</a>).</p>
+    </section>
+
+    <section id="contact" aria-labelledby="contact-h">
+      <h2 id="contact-h">Contact</h2>
+      <p class="contact-note">I'm not looking for a new role right now, but my inbox is always open. Questions, ideas, or just hello.</p>
+      <a class="email" href="mailto:mohamad.azriebakri@gmail.com">mohamad.azriebakri@gmail.com</a>
+      <ul class="social">
+        <li><a href="https://github.com/azriebakri">GitHub</a></li>
+        <li><a href="https://www.linkedin.com/in/azriebakri">LinkedIn</a></li>
+        <li><a href="assets/resume.pdf">Résumé (PDF)</a></li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Azrie Bakri, <span id="year">2026</span></p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
