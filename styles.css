@@ -387,11 +387,35 @@ main > section.hero {
   margin-bottom: 3.5rem;
 }
 
-.project img {
-  width: 100%;
-  border-radius: 6px;
-  border: 1px solid var(--rule);
+.shot {
   margin-bottom: 1.25rem;
+}
+
+.shot img {
+  width: 100%;
+}
+
+/* Each screenshot has a light and a dark copy; show the one for the active theme. */
+.shot-dark {
+  display: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .shot-light {
+    display: none;
+  }
+
+  :root:not([data-theme="light"]) .shot-dark {
+    display: block;
+  }
+}
+
+:root[data-theme="dark"] .shot-light {
+  display: none;
+}
+
+:root[data-theme="dark"] .shot-dark {
+  display: block;
 }
 
 .project h3 {
