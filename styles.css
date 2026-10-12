@@ -195,7 +195,7 @@ main > section.hero {
   width: clamp(2.75rem, 11vw, 7.5rem);
   height: auto;
   aspect-ratio: 1;
-  border-radius: 50%;
+  border-radius: 18%;
   object-fit: cover;
   filter: grayscale(1) contrast(1.05);
 }
