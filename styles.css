@@ -184,9 +184,26 @@ main > section.hero {
   border-top: 0;
 }
 
+.hero-title {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.875rem, 2.75vw, 2rem);
+}
+
+.hero-photo {
+  flex: none;
+  width: clamp(2.75rem, 11vw, 7.5rem);
+  height: auto;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  object-fit: cover;
+  filter: grayscale(1) contrast(1.05);
+}
+
 .hero h1 {
   margin: 0;
-  font-size: clamp(3.25rem, 15vw, 9.5rem);
+  font-size: clamp(2.5rem, 12vw, 8.25rem);
+  min-width: 0;
   font-weight: 800;
   line-height: 0.88;
   letter-spacing: -0.055em;
@@ -213,13 +230,6 @@ main > section.hero {
   gap: 2rem;
 }
 
-.portrait {
-  width: 7.5rem;
-  height: 7.5rem;
-  border-radius: 50%;
-  object-fit: cover;
-  filter: grayscale(1) contrast(1.05);
-}
 
 .prose p {
   margin: 0 0 1.1em;
@@ -457,8 +467,13 @@ main > section.hero {
 
 @media (prefers-reduced-motion: no-preference) {
   .hero h1,
+  .hero-photo,
   .hero .lede {
     animation: rise 0.9s cubic-bezier(0.2, 0.7, 0.1, 1) both;
+  }
+
+  .hero-photo {
+    animation-delay: 0.08s;
   }
 
   .hero .lede {
