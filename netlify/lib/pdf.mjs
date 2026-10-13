@@ -1,15 +1,26 @@
-// Renders the résumé document (see model.mjs) to an A4 PDF with pdf-lib.
-import { PDFDocument, PDFString, StandardFonts, rgb } from 'pdf-lib';
+// Renders the résumé document (see model.mjs) to an A4 PDF with pdf-lib,
+// styled after the website: paper background, ink text, cobalt accents.
+//
+// Layout is measured before it is drawn, so a section or entry that won't fit
+// in the space left on a page starts on the next page instead of splitting.
+// Only blocks taller than a whole page are split (between projects first).
+import { PDFDocument, PDFString, StandardFonts, popGraphicsState, pushGraphicsState, rgb, setCharacterSpacing } from 'pdf-lib';
 
 const PAGE = [595.28, 841.89]; // A4 in points
-const MARGIN = { top: 52, bottom: 54, left: 54, right: 54 };
+const MARGIN = { top: 54, bottom: 56, left: 56, right: 56 };
 const CONTENT_W = PAGE[0] - MARGIN.left - MARGIN.right;
+const PAGE_TOP = PAGE[1] - MARGIN.top;
+const FULL_H = PAGE_TOP - MARGIN.bottom;
 
-// The site's palette.
-const INK = rgb(0x1b / 255, 0x1e / 255, 0x22 / 255);
-const MUTED = rgb(0x64 / 255, 0x6b / 255, 0x73 / 255);
-const ACCENT = rgb(0x2b / 255, 0x46 / 255, 0xd8 / 255);
-const RULE = rgb(0xdc / 255, 0xdf / 255, 0xda / 255);
+const hex = (h) => rgb(parseInt(h.slice(1, 3), 16) / 255, parseInt(h.slice(3, 5), 16) / 255, parseInt(h.slice(5, 7), 16) / 255);
+
+// The website's palette.
+const PAPER = hex('#f6f7f5');
+const SURFACE = hex('#ffffff');
+const INK = hex('#1b1e22');
+const MUTED = hex('#646b73');
+const RULE = hex('#dcdfda');
+const ACCENT = hex('#2b46d8');
 
 const BODY = { size: 9.5, leading: 13.6 };
 
@@ -57,24 +68,70 @@ export async function renderResumePdf(data) {
     return out;
   };
 
+  // ---- Page state ------------------------------------------------------------
+  // In a dry run nothing is drawn; y still advances so heights can be measured.
   const pages = [];
   let page;
-  let y;
+  let y = PAGE_TOP;
+  let dry = false;
+
   const newPage = () => {
     page = doc.addPage(PAGE);
     pages.push(page);
-    y = PAGE[1] - MARGIN.top;
+    page.drawRectangle({ x: 0, y: 0, width: PAGE[0], height: PAGE[1], color: PAPER });
+    y = PAGE_TOP;
   };
+  const atTop = () => y >= PAGE_TOP;
   const ensure = (height) => {
-    if (y - height < MARGIN.bottom) newPage();
+    if (!dry && y - height < MARGIN.bottom) newPage();
   };
   const gap = (h) => {
-    if (y < PAGE[1] - MARGIN.top) y -= h; // no gaps at the top of a page
+    if (dry || !atTop()) y -= h; // no gaps at the top of a page
   };
 
-  const wrap = (text, font, size, width) => {
+  const measure = (fn) => {
+    const saved = { y, dry };
+    dry = true;
+    y = 1e6;
+    fn();
+    const height = 1e6 - y;
+    ({ y, dry } = saved);
+    return height;
+  };
+
+  /**
+   * Draw `fn` without splitting it across pages when possible: if it doesn't
+   * fit in the space left, start a new page. If it's taller than a whole page,
+   * run `fallback` (which can keep smaller pieces together) instead.
+   */
+  const keep = (fn, gapBefore = 0, fallback = fn) => {
+    if (dry) {
+      gap(gapBefore);
+      fn();
+      return;
+    }
+    const height = measure(fn);
+    const needed = height + (atTop() ? 0 : gapBefore);
+    if (y - needed >= MARGIN.bottom) {
+      gap(gapBefore);
+      fn();
+    } else if (height <= FULL_H) {
+      newPage();
+      fn();
+    } else {
+      gap(gapBefore);
+      fallback();
+    }
+  };
+
+  // ---- Drawing primitives ----------------------------------------------------
+  const text = (str, opts) => {
+    if (!dry && str) page.drawText(str, opts);
+  };
+
+  const wrap = (str, font, size, width) => {
     const lines = [];
-    for (const rawLine of String(text).split('\n')) {
+    for (const rawLine of String(str).split('\n')) {
       const words = clean(rawLine).trim().split(/ +/).filter(Boolean);
       let line = '';
       for (let word of words) {
@@ -102,15 +159,16 @@ export async function renderResumePdf(data) {
   };
 
   // Draws one line in a box `leading` tall and returns its baseline.
-  const line = (text, { font = regular, size = BODY.size, leading = BODY.leading, x = MARGIN.left, color = INK } = {}) => {
+  const line = (str, { font = regular, size = BODY.size, leading = BODY.leading, x = MARGIN.left, color = INK } = {}) => {
     ensure(leading);
     const baseline = y - (leading - size) / 2 - size * 0.78;
-    if (text) page.drawText(text, { x, y: baseline, size, font, color });
+    text(str, { x, y: baseline, size, font, color });
     y -= leading;
     return baseline;
   };
 
   const addLink = (x, baseline, width, size, uri) => {
+    if (dry) return;
     const ctx = doc.context;
     const annot = ctx.obj({
       Type: 'Annot',
@@ -122,17 +180,24 @@ export async function renderResumePdf(data) {
     page.node.addAnnot(ctx.register(annot));
   };
 
-  const paragraphs = (text, style = {}) => {
-    const blocks = String(text || '')
+  // A pill: rounded rectangle with fully round ends.
+  const pill = (x, top, width, height, { fill, border }) => {
+    if (dry) return;
+    const r = height / 2;
+    const path = `M ${r} 0 H ${width - r} A ${r} ${r} 0 0 1 ${width - r} ${height} H ${r} A ${r} ${r} 0 0 1 ${r} 0 Z`;
+    page.drawSvgPath(path, { x, y: top, color: fill, borderColor: border, borderWidth: 0.6 });
+  };
+
+  const paragraphs = (str, style = {}) => {
+    const blocks = String(str || '')
       .split(/\n\s*\n/)
       .map((b) => b.trim())
       .filter(Boolean);
     const font = style.font || regular;
     const size = style.size || BODY.size;
-    const indent = style.indent || 0;
     blocks.forEach((block, i) => {
       if (i) gap(5);
-      for (const l of wrap(block, font, size, CONTENT_W - indent)) line(l, { ...style, x: MARGIN.left + indent });
+      for (const l of wrap(block, font, size, CONTENT_W)) line(l, style);
     });
   };
 
@@ -142,20 +207,49 @@ export async function renderResumePdf(data) {
       const lines = wrap(item, regular, BODY.size, CONTENT_W - indent);
       lines.forEach((l, i) => {
         const baseline = line(l, { x: MARGIN.left + indent });
-        if (i === 0) page.drawText('•', { x: MARGIN.left + 1.5, y: baseline, size: BODY.size, font: regular, color: MUTED });
+        if (i === 0) text('•', { x: MARGIN.left + 1.5, y: baseline, size: BODY.size, font: regular, color: ACCENT });
       });
       gap(2.5);
     }
   };
 
-  const label = (text) => {
+  const label = (str) => {
     gap(3);
-    line(text, { font: bold, size: 9, leading: 13, color: INK });
+    line(str, { font: bold, size: 9, leading: 13 });
+  };
+
+  const tags = (items) => {
+    const size = 8.75;
+    const padX = 7;
+    const h = 15;
+    const rowGap = 5;
+    const colGap = 5;
+    const words = items.map((t) => clean(t.trim())).filter(Boolean);
+    let x = MARGIN.left;
+    let rowTop = null;
+    const startRow = () => {
+      if (rowTop !== null) y -= rowGap;
+      ensure(h);
+      rowTop = y;
+      y -= h;
+      x = MARGIN.left;
+    };
+    startRow();
+    for (const word of words) {
+      const w = Math.min(regular.widthOfTextAtSize(word, size) + padX * 2, CONTENT_W);
+      if (x > MARGIN.left && x + w > MARGIN.left + CONTENT_W) startRow();
+      pill(x, rowTop, w, h, { fill: SURFACE, border: RULE });
+      text(word, { x: x + padX, y: rowTop - h / 2 - size * 0.34, size, font: regular, color: INK });
+      x += w + colGap;
+    }
   };
 
   // ---- Header ----------------------------------------------------------------
   newPage();
-  for (const l of wrap(data.name || '', bold, 23, CONTENT_W)) line(l, { font: bold, size: 23, leading: 27 });
+  if (!dry) page.pushOperators(pushGraphicsState(), setCharacterSpacing(-0.5));
+  for (const l of wrap(data.name || '', bold, 24, CONTENT_W)) line(l, { font: bold, size: 24, leading: 28 });
+  if (!dry) page.pushOperators(popGraphicsState());
+
   if (data.headline?.trim()) {
     gap(1);
     for (const l of wrap(data.headline, regular, 11.5, CONTENT_W)) line(l, { size: 11.5, leading: 15, color: MUTED });
@@ -167,12 +261,12 @@ export async function renderResumePdf(data) {
     { text: c.location },
     { text: c.phone, link: c.phone ? `tel:${c.phone.replace(/[^\d+]/g, '')}` : '' },
     { text: c.email, link: c.email ? `mailto:${c.email.trim()}` : '' },
-    { text: website.replace(/^https?:\/\//, '').replace(/\/$/, ''), link: /^https?:\/\//.test(website) ? website : website ? `https://${website}` : '' },
+    { text: website.replace(/^https?:\/\//, '').replace(/\/$/, ''), link: /^https?:\/\//.test(website) ? website : website ? `https://${website}` : '', accent: true },
   ]
     .map((s) => ({ ...s, text: clean((s.text || '').trim()) }))
     .filter((s) => s.text);
   if (segments.length) {
-    gap(4);
+    gap(5);
     const size = 9.25;
     const sep = '   |   ';
     const sepW = regular.widthOfTextAtSize(sep, size);
@@ -184,25 +278,24 @@ export async function renderResumePdf(data) {
         x = MARGIN.left;
         baseline = line('', { size, leading: 13 });
       } else if (i) {
-        page.drawText(sep, { x, y: baseline, size, font: regular, color: RULE });
+        text(sep, { x, y: baseline, size, font: regular, color: RULE });
         x += sepW;
       }
-      page.drawText(s.text, { x, y: baseline, size, font: regular, color: MUTED });
+      text(s.text, { x, y: baseline, size, font: regular, color: s.accent ? ACCENT : MUTED });
       if (s.link) addLink(x, baseline, w, size, s.link);
       x += w;
     });
   }
 
   // ---- Sections --------------------------------------------------------------
-  const entry = (e, sub = false) => {
+  const entryHead = (e, sub) => {
     const titleSize = sub ? 9.75 : 10.25;
     const dates = clean((e.dates || '').trim());
     const datesSize = 9;
     const datesW = dates ? regular.widthOfTextAtSize(dates, datesSize) : 0;
     const titleLines = wrap(e.title || '', bold, titleSize, CONTENT_W - (datesW ? datesW + 16 : 0)).filter(Boolean);
-    ensure(14 * Math.max(titleLines.length, 1) + BODY.leading * 2);
     const first = line(titleLines[0] || '', { font: bold, size: titleSize, leading: 14 });
-    if (dates) page.drawText(dates, { x: MARGIN.left + CONTENT_W - datesW, y: first, size: datesSize, font: regular, color: MUTED });
+    if (dates) text(dates, { x: MARGIN.left + CONTENT_W - datesW, y: first, size: datesSize, font: regular, color: MUTED });
     for (const l of titleLines.slice(1)) line(l, { font: bold, size: titleSize, leading: 14 });
     if (e.subtitle?.trim()) for (const l of wrap(e.subtitle, regular, 9.25, CONTENT_W)) line(l, { size: 9.25, leading: 13, color: MUTED });
 
@@ -221,42 +314,70 @@ export async function renderResumePdf(data) {
       label('Outcome');
       paragraphs(e.outcome);
     }
-    for (const p of e.projects || []) {
+  };
+
+  // An entry and its projects. Kept whole when it fits on a page; otherwise
+  // the entry stays with its first project and each later project is kept whole.
+  const entry = (e, sub = false) => {
+    const projects = sub ? [] : e.projects || [];
+    if (!projects.length) return entryHead(e, sub);
+    keep(() => {
+      entryHead(e, sub);
       gap(9);
-      entry(p, true);
+      entry(projects[0], true);
+    });
+    projects.slice(1).forEach((p) => keep(() => entry(p, true), 9));
+  };
+
+  const sectionTitle = (s) => {
+    if (!s.title?.trim()) return;
+    line(clean(s.title.trim()), { font: bold, size: 10.5, leading: 15, color: ACCENT });
+    y -= 2.5;
+    if (!dry) page.drawLine({ start: { x: MARGIN.left, y }, end: { x: MARGIN.left + CONTENT_W, y }, thickness: 0.6, color: RULE });
+    y -= 8;
+  };
+
+  const sectionBody = (s) => {
+    if (s.type === 'text') paragraphs(s.body);
+    else if (s.type === 'tags') tags(s.items);
+    else if (s.type === 'list') {
+      for (const item of s.items.map((t) => t.trim()).filter(Boolean)) for (const l of wrap(item, regular, BODY.size, CONTENT_W)) line(l);
+    } else if (s.type === 'entries') {
+      s.items.forEach((e, i) => keep(() => entry(e), i ? 11 : 0));
     }
   };
 
   const hasContent = (s) =>
-    s.type === 'text' ? Boolean(s.body?.trim()) : (s.items || []).some((i) => (typeof i === 'string' ? i.trim() : i.title?.trim() || i.description?.trim() || i.bullets?.some((b) => b.trim())));
+    s.type === 'text'
+      ? Boolean(s.body?.trim())
+      : (s.items || []).some((i) => (typeof i === 'string' ? i.trim() : i.title?.trim() || i.description?.trim() || i.bullets?.some((b) => b.trim())));
 
   for (const s of data.sections || []) {
     if (!hasContent(s)) continue;
-    gap(17);
-    if (s.title?.trim()) {
-      ensure(15 + 10 + BODY.leading * 2);
-      line(clean(s.title.trim()), { font: bold, size: 10.5, leading: 15, color: ACCENT });
-      y -= 2.5;
-      page.drawLine({ start: { x: MARGIN.left, y }, end: { x: MARGIN.left + CONTENT_W, y }, thickness: 0.6, color: RULE });
-      y -= 8;
-    }
-    if (s.type === 'text') paragraphs(s.body);
-    else if (s.type === 'tags') paragraphs(s.items.map((t) => t.trim()).filter(Boolean).join(', '));
-    else if (s.type === 'list') for (const item of s.items.map((t) => t.trim()).filter(Boolean)) for (const l of wrap(item, regular, BODY.size, CONTENT_W)) line(l);
-    else if (s.type === 'entries') {
-      s.items.forEach((e, i) => {
-        if (i) gap(11);
-        entry(e);
+    const whole = () => {
+      sectionTitle(s);
+      sectionBody(s);
+    };
+    // A section too tall for one page keeps its title with its first entry,
+    // then keeps each later entry whole.
+    const split = () => {
+      if (s.type !== 'entries') return whole();
+      const items = s.items;
+      keep(() => {
+        sectionTitle(s);
+        entry(items[0]);
       });
-    }
+      items.slice(1).forEach((e) => keep(() => entry(e), 11));
+    };
+    keep(whole, 18, split);
   }
 
   // ---- Page numbers ----------------------------------------------------------
   if (pages.length > 1) {
     pages.forEach((p, i) => {
-      const text = `${i + 1} / ${pages.length}`;
-      const w = regular.widthOfTextAtSize(text, 8);
-      p.drawText(text, { x: MARGIN.left + CONTENT_W - w, y: MARGIN.bottom - 26, size: 8, font: regular, color: MUTED });
+      const str = `${i + 1} / ${pages.length}`;
+      const w = regular.widthOfTextAtSize(str, 8);
+      p.drawText(str, { x: MARGIN.left + CONTENT_W - w, y: MARGIN.bottom - 28, size: 8, font: regular, color: MUTED });
     });
   }
 
