@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Résumé editor</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" href="/assets/favicon.ico" sizes="48x48">
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+  <meta name="theme-color" content="#f6f7f5" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#16181b" media="(prefers-color-scheme: dark)">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:ital,wght@0,400..800;1,400..600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/resume/editor.css">
+  <script>
+    try {
+      const t = localStorage.getItem('theme');
+      if (t) document.documentElement.dataset.theme = t;
+    } catch (e) {}
+  </script>
+</head>
+<body>
+  <header class="bar">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <a href="/">Azrie Bakri</a>
+      <span aria-hidden="true">/</span>
+      <span aria-current="page">Résumé</span>
+    </nav>
+    <div class="bar-actions" id="actions" hidden>
+      <span class="save-status" id="save-status" role="status" aria-live="polite"></span>
+      <button class="btn" type="button" id="download">Download PDF</button>
+      <button class="btn btn-primary" type="button" id="publish">Publish</button>
+    </div>
+    <button class="btn btn-quiet signout" type="button" id="signout" hidden>Sign out</button>
+  </header>
+
+  <main id="main">
+    <p class="loading" id="loading">Loading…</p>
+
+    <section class="gate" id="signin" hidden aria-labelledby="signin-h">
+      <h1 id="signin-h">Résumé editor</h1>
+      <p id="signin-note">Sign in with the Google account that owns this site to edit your résumé.</p>
+      <div id="google-button" class="google-button"></div>
+      <p class="gate-error" id="signin-error" role="alert" hidden></p>
+      <p class="gate-back"><a href="/">Back to the site</a></p>
+    </section>
+
+    <div class="workspace" id="workspace" hidden>
+      <div class="publish-state" id="publish-state"></div>
+      <article class="sheet" id="doc" aria-label="Résumé"></article>
+      <div class="add-section" id="add-section">
+        <span>Add a section</span>
+        <button class="btn btn-small" type="button" data-add="text">Paragraph</button>
+        <button class="btn btn-small" type="button" data-add="entries">Experience entries</button>
+        <button class="btn btn-small" type="button" data-add="tags">Tags</button>
+        <button class="btn btn-small" type="button" data-add="list">List</button>
+      </div>
+      <p class="hint">Changes save automatically to your draft. <strong>Publish</strong> makes the draft the résumé your main page downloads.</p>
+    </div>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden>
+    <span id="toast-text"></span>
+    <button class="toast-action" type="button" id="toast-action" hidden></button>
+  </div>
+
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="/resume/editor.js" type="module"></script>
+</body>
+</html>
